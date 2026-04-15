@@ -1,1 +1,1314 @@
-placeholder
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How We Use AI for User Research at Etch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1C1F4C;
+    --indigo: #332E86;
+    --orange: #FBAE40;
+    --coral: #F26B43;
+    --purple: #6A40E8;
+    --teal: #248996;
+    --cyan: #50C0DA;
+    --green: #7CBD6D;
+    --red: #EE0B44;
+    --charcoal: #3C3C3B;
+    --midgray: #44546A;
+    --divider: #D8DEE7;
+    --lgray: #EBEBEB;
+    --offwhite: #F7F8FA;
+    --white: #FFFFFF;
+    --sidebar-w: 260px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(28,31,76,.08);
+    --shadow-md: 0 4px 16px rgba(28,31,76,.12);
+    --shadow-lg: 0 8px 32px rgba(28,31,76,.16);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font);
+    background: var(--offwhite);
+    color: var(--charcoal);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    overflow: hidden auto;
+  }
+
+  .sidebar-brand {
+    padding: 1.6rem 1.4rem 1.2rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .etch-logo {
+    font-family: var(--font);
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .etch-logo span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    margin-left: 2px;
+    vertical-align: super;
+  }
+
+  .sidebar-sub {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: rgba(255,255,255,.4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .nav {
+    padding: 1rem 0;
+    flex: 1;
+  }
+
+  .nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 1.4rem;
+    text-decoration: none;
+    color: rgba(255,255,255,.5);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border-left: 3px solid transparent;
+  }
+
+  .nav a:hover {
+    color: var(--white);
+    background: rgba(255,255,255,.05);
+    border-left-color: rgba(255,255,255,.2);
+  }
+
+  .nav a.active {
+    color: var(--white);
+    background: rgba(251,174,64,.08);
+    border-left-color: var(--orange);
+  }
+
+  .nav-num {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.25);
+    letter-spacing: 0.06em;
+    min-width: 18px;
+  }
+
+  .nav a.active .nav-num { color: var(--orange); }
+
+  .sidebar-footer {
+    padding: 1.2rem 1.4rem;
+    border-top: 1px solid rgba(255,255,255,.08);
+    font-size: 0.68rem;
+    color: rgba(255,255,255,.25);
+    line-height: 1.6;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 5rem 6vw;
+    border-bottom: 1px solid var(--divider);
+    max-width: 960px;
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: rgba(251,174,64,.1);
+    border: 1px solid rgba(251,174,64,.25);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-label .dot {
+    width: 6px; height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+  }
+
+  h2.section-title {
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  h2.section-title em {
+    font-style: normal;
+    color: var(--indigo);
+  }
+
+  .section-intro {
+    font-size: 1.05rem;
+    color: var(--midgray);
+    max-width: 600px;
+    line-height: 1.75;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--indigo) 60%, #4A3BA0 100%);
+    display: flex;
+    align-items: center;
+    padding: 5rem 6vw;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 70%;
+    height: 130%;
+    background: radial-gradient(ellipse, rgba(106,64,232,.3) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    left: 5%;
+    width: 40%;
+    height: 70%;
+    background: radial-gradient(ellipse, rgba(251,174,64,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 720px; }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.7);
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 2rem;
+  }
+
+  .hero-tag .dot {
+    width: 6px; height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 5vw, 5rem);
+    font-weight: 800;
+    line-height: 1.06;
+    color: var(--white);
+    letter-spacing: -0.025em;
+    margin-bottom: 1.4rem;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--orange);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,.6);
+    max-width: 520px;
+    line-height: 1.75;
+    margin-bottom: 3.5rem;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat-n {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .hero-stat-l {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,.4);
+    font-weight: 500;
+    margin-top: 5px;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2.5rem;
+    right: 6vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.4;
+    animation: bounce 2.2s ease infinite;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* ── USE CASE CARDS ── */
+  .use-cases {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+
+  .use-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 1.8rem 1.8rem 4rem 1.8rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--divider);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .use-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .use-card.orange::before { background: var(--orange); }
+  .use-card.purple::before { background: var(--purple); }
+  .use-card.teal::before { background: var(--teal); }
+  .use-card.coral::before { background: var(--coral); }
+  .use-card.indigo::before { background: var(--indigo); }
+  .use-card.green::before { background: var(--green); }
+  .use-card.cyan::before { background: var(--cyan); }
+
+  .use-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .use-card-num {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--midgray);
+    margin-bottom: 0.6rem;
+  }
+
+  .use-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+  }
+
+  .use-card p {
+    font-size: 0.85rem;
+    color: var(--midgray);
+    line-height: 1.65;
+  }
+
+  .use-card .tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+  }
+
+  .use-card.orange .tag { background: rgba(251,174,64,.12); color: #C87D00; }
+  .use-card.purple .tag { background: rgba(106,64,232,.1); color: var(--purple); }
+  .use-card.teal .tag { background: rgba(36,137,150,.1); color: var(--teal); }
+  .use-card.coral .tag { background: rgba(242,107,67,.1); color: var(--coral); }
+  .use-card.indigo .tag { background: rgba(51,46,134,.1); color: var(--indigo); }
+  .use-card.green .tag { background: rgba(124,189,109,.15); color: #4a8a38; }
+  .use-card.cyan .tag { background: rgba(80,192,218,.12); color: #1a7d96; }
+
+  /* ── INSIGHT / PROCESS CARDS ── */
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .insight-card {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 1.4rem;
+    border: 1px solid var(--divider);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .insight-card-num {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--indigo);
+    margin-bottom: 0.4rem;
+  }
+
+  .insight-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.4rem;
+  }
+
+  .insight-card p {
+    font-size: 0.8rem;
+    color: var(--midgray);
+    line-height: 1.55;
+  }
+
+  /* ── QUOTE ── */
+  .quote-block {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--indigo) 100%);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    margin: 2.5rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quote-block::before {
+    content: '"';
+    position: absolute;
+    top: -0.5rem;
+    left: 1.5rem;
+    font-size: 8rem;
+    font-weight: 900;
+    color: rgba(255,255,255,.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .quote-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin-bottom: 1rem;
+  }
+
+  .quote-attr {
+    font-size: 0.78rem;
+    color: var(--orange);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── PRO / CON SPLIT ── */
+  .split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .split-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    border: 1px solid var(--divider);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .split-card.upside { border-top: 3px solid var(--green); }
+  .split-card.downside { border-top: 3px solid var(--coral); }
+
+  .split-card h3 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.2rem;
+  }
+
+  .split-card.upside h3 { color: #4a8a38; }
+  .split-card.downside h3 { color: var(--coral); }
+
+  .split-item {
+    display: flex;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+  }
+
+  .split-item:last-child { margin-bottom: 0; }
+
+  .split-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 0.45rem;
+    flex-shrink: 0;
+  }
+
+  .upside .split-dot { background: var(--green); }
+  .downside .split-dot { background: var(--coral); }
+
+  .split-item p {
+    font-size: 0.85rem;
+    color: var(--midgray);
+    line-height: 1.6;
+  }
+
+  .split-item strong {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.2rem;
+  }
+
+  /* ── FUTURE GRID ── */
+  .future-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  .future-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 1.8rem;
+    border: 1px solid var(--divider);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .future-card:hover { box-shadow: var(--shadow-md); }
+
+  .future-num {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 0.6rem;
+  }
+
+  .future-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+    line-height: 1.35;
+  }
+
+  .future-card p {
+    font-size: 0.82rem;
+    color: var(--midgray);
+    line-height: 1.6;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin: 2.5rem 0;
+    padding: 2rem;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--divider);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .stat-block { text-align: left; }
+
+  .stat-n {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .stat-n span { color: var(--orange); }
+
+  .stat-l {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--midgray);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  /* ── DARK CALLOUT ── */
+  .dark-callout {
+    background: linear-gradient(135deg, var(--navy) 0%, #2A2770 100%);
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    margin-top: 2rem;
+    color: var(--white);
+  }
+
+  .dark-callout h3 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .dark-callout h3 em {
+    font-style: normal;
+    color: var(--orange);
+  }
+
+  .dark-callout p {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,.65);
+    line-height: 1.7;
+    max-width: 580px;
+  }
+
+  /* ── PROCESS STEPS ── */
+  .process-steps {
+    margin-top: 2rem;
+    counter-reset: step;
+  }
+
+  .process-step {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--divider);
+    align-items: flex-start;
+  }
+
+  .process-step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 36px;
+    height: 36px;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .step-content h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.3rem;
+  }
+
+  .step-content p {
+    font-size: 0.85rem;
+    color: var(--midgray);
+    line-height: 1.6;
+  }
+
+  /* ── CLOSING ── */
+  .closing {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--indigo) 60%, #4A3BA0 100%);
+    padding: 6rem 6vw;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .closing::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 60%;
+    height: 120%;
+    background: radial-gradient(ellipse, rgba(106,64,232,.25) 0%, transparent 70%);
+  }
+
+  .closing-content { position: relative; z-index: 1; max-width: 700px; }
+
+  .closing h2 {
+    font-size: clamp(2rem, 3.5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .closing h2 em {
+    font-style: normal;
+    color: var(--orange);
+  }
+
+  .closing p {
+    font-size: 1rem;
+    color: rgba(255,255,255,.6);
+    line-height: 1.75;
+    margin-bottom: 3rem;
+  }
+
+  .closing-stats {
+    display: flex;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .closing-stat-n {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .closing-stat-l {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,.4);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .closing-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,.1);
+    font-size: 0.75rem;
+    color: rgba(255,255,255,.3);
+  }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight-box {
+    background: rgba(251,174,64,.08);
+    border: 1px solid rgba(251,174,64,.25);
+    border-left: 3px solid var(--orange);
+    border-radius: var(--radius-md);
+    padding: 1.2rem 1.4rem;
+    margin: 1.5rem 0;
+    font-size: 0.88rem;
+    color: var(--navy);
+    line-height: 1.65;
+  }
+
+  /* ── CASE STUDY BUTTON ── */
+  .case-study-btn {
+    position: absolute;
+    bottom: 1.1rem;
+    right: 1.1rem;
+    width: 40px;
+    height: 40px;
+    background: var(--red);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(238,11,68,.35);
+    transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    z-index: 2;
+  }
+
+  .case-study-btn:hover {
+    background: #c8073a;
+    transform: scale(1.12);
+    box-shadow: 0 4px 20px rgba(238,11,68,.45);
+  }
+
+  .case-study-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .use-card .tag {
+    margin-top: auto;
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--divider); margin: 2rem 0; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(28,31,76,.2); border-radius: 99px; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .use-cases, .split-grid { grid-template-columns: 1fr; }
+    .section { padding: 3rem 5vw; }
+    .hero { padding: 3rem 5vw; min-height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="etch-logo">ETCH<span></span></div>
+    <div class="sidebar-sub">Claude for Research</div>
+  </div>
+  <div class="nav">
+    <a href="#overview" class="active"><span class="nav-num">01</span> Overview</a>
+    <a href="#analysis"><span class="nav-num">02</span> Analysis &amp; Synthesis</a>
+    <a href="#prototyping"><span class="nav-num">03</span> Prototyping from Research</a>
+    <a href="#synthetic"><span class="nav-num">04</span> Synthetic Users</a>
+    <a href="#personas"><span class="nav-num">05</span> Personas &amp; Journeys</a>
+    <a href="#sme"><span class="nav-num">06</span> SME Feedback</a>
+    <a href="#portal"><span class="nav-num">07</span> Research Ops Portal</a>
+    <a href="#correspondence"><span class="nav-num">08</span> Client Correspondence</a>
+    <a href="#balance"><span class="nav-num">09</span> What Works &amp; What Doesn't</a>
+    <a href="#future"><span class="nav-num">10</span> Future Thinking</a>
+  </div>
+  <div class="sidebar-footer">
+    Etch × EQ<br>April 2026
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <section class="hero" id="overview">
+    <div class="hero-content">
+      <div class="hero-tag"><span class="dot"></span> April 2026 - Etch × EQ</div>
+      <h1>How We Use AI for<br><em>User Research</em></h1>
+      <p class="hero-sub">How the Etch team uses AI to accelerate research operations at EQ - from synthesis and prototyping to synthetic users, correspondence management, and a living research portal.</p>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-n">7</div>
+          <div class="hero-stat-l">Use Cases</div>
+        </div>
+        <div>
+          <div class="hero-stat-n">4×</div>
+          <div class="hero-stat-l">Faster Synthesis</div>
+        </div>
+        <div>
+          <div class="hero-stat-n">6+</div>
+          <div class="hero-stat-l">Research Schemes</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll">SCROLL ↓</div>
+  </section>
+
+  <!-- HOW WE USE IT -->
+  <section class="section" id="analysis">
+    <div class="section-label"><span class="dot"></span> How We Use Claude</div>
+    <h2 class="section-title">Seven ways Claude powers<br><em>Etch research</em></h2>
+    <p class="section-intro">Claude has become embedded across the full research lifecycle at Etch - not as a replacement for researcher judgment, but as the engine that handles heavy lifting so researchers can focus on what matters: reading between the lines.</p>
+
+    <div class="use-cases">
+      <div class="use-card orange">
+        <div class="use-card-num">01 - Analysis &amp; Synthesis</div>
+        <h3>Turning transcripts into insight documents</h3>
+        <p>After every research session, transcripts are uploaded and Claude generates a first-pass findings document. It quantifies recurring themes across sessions, surfaces patterns, and structures raw data into a readable artefact. The team then reviews, challenges, and adds the insights only a researcher could catch.</p>
+        <span class="tag">Core Workflow</span>
+        <a href="https://www.figma.com/deck/RfElNlMuDgBWxU9RKBFnTy/EQ-One-research-slide-deck?node-id=1-1283&t=MkYKFmvlDxEk9ii7-1" class="case-study-btn" target="_blank" rel="noopener" aria-label="See case study">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="use-card purple">
+        <div class="use-card-num">02 - Prototyping</div>
+        <h3>Building solutions directly from research transcripts</h3>
+        <p>After general employee research, transcripts were fed into Claude to generate solution concepts and insights for SAYE and SIP prototypes. This was later extended to Share Awards following the Discovery workshop with SME feedback. Research-to-prototype in hours, not weeks.</p>
+        <span class="tag">High Impact</span>
+        <a href="https://altunmaral.github.io/global-portal-annotated/" class="case-study-btn" target="_blank" rel="noopener" aria-label="See case study">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="use-card teal">
+        <div class="use-card-num">03 - Synthetic Users</div>
+        <h3>Fast, agile validation before recruitment begins</h3>
+        <p>At the start of a project or straight after a prototype is built, we use AI-simulated user profiles to run a quick, low-cost validation round. This gives us early directional signal before we commit to a full recruitment cycle - accelerating the work, reducing cost at the exploratory stage, and making the real research sessions sharper when they happen.</p>
+        <span class="tag">Agile Testing</span>
+        <a href="ESP-Portal-User-Testing-Report.pptx" class="case-study-btn" aria-label="See case study">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="use-card coral">
+        <div class="use-card-num">04 - Personas &amp; User Journeys</div>
+        <h3>From raw data to visual research artefacts</h3>
+        <p>Claude generates structured user personas and detailed journey maps from research transcripts and synthesis documents. These become the shared language between design, product, and stakeholders - grounded in evidence rather than assumption.</p>
+        <span class="tag">Research Artefacts</span>
+        <a href="https://www.figma.com/deck/JKqzjnWWZN5SD6Zx6lEefh/ETH-002-User-Personas-EQ-Style?t=m71HNDNwZNNvJpJm-1" class="case-study-btn" target="_blank" rel="noopener" aria-label="See case study">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="use-card indigo">
+        <div class="use-card-num">05 - SME Feedback</div>
+        <h3>Comment sections and visualised meeting summaries</h3>
+        <p>When sharing prototypes, flows, or visualised meeting summaries with stakeholders, Claude generates exportable comment sections for structured SME input. After the Discretionary Discovery Meeting, meeting notes were visualised to sharpen understanding before the live research sessions began.</p>
+        <span class="tag">Stakeholder Engagement</span>
+        <a href="https://uxconsultancy.github.io/nexus-etch/Share-Awards-Prototype.html" class="case-study-btn" target="_blank" rel="noopener" aria-label="See case study">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="use-card green">
+        <div class="use-card-num">06 - Research Ops Portal</div>
+        <h3>A living archive of all EQ research</h3>
+        <p>A Research Operations Portal is being built to host all EQ research chronologically - videos, transcripts, findings, prototype links, and decisions in one place. Including Lyssna outputs. The goal is institutional memory that doesn't get lost after a project ends.</p>
+        <span class="tag">In Progress</span>
+        <a href="https://nexus-etch-eq.web.app/" class="case-study-btn" target="_blank" rel="noopener" aria-label="See case study">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="use-card cyan">
+        <div class="use-card-num">07 - Client Correspondence</div>
+        <h3>Email triage and admin tracking</h3>
+        <p>Parsing and following up on Client Admin correspondence. Claude helps organise email threads, draft responses, and maintain a tracking system for ongoing client admin loops - reducing time spent on coordination and surfacing what actually needs attention.</p>
+        <span class="tag">Operations</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANALYSIS DEEP DIVE -->
+  <section class="section" style="padding-top: 4rem;" id="prototyping">
+    <div class="section-label"><span class="dot"></span> Deeper Look</div>
+    <h2 class="section-title">Analysis &amp; synthesis<br><em>in practice</em></h2>
+    <p class="section-intro">The synthesis workflow is where Claude delivers the most measurable time savings - but also where the limits of AI are most visible.</p>
+
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h4>Upload session transcripts</h4>
+          <p>Raw transcripts from research sessions (or Lyssna exports) are uploaded directly. Claude reads across multiple sessions simultaneously - something that takes a researcher hours to do manually.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h4>Generate first-pass findings</h4>
+          <p>Claude produces a structured document: recurring themes, frequency counts, participant quotes, and a prioritised list of insights. This draft would otherwise take a full day to produce manually.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h4>Researcher review and refinement</h4>
+          <p>The team reads through the AI output and - critically - adds the insights that only come from being in the room. The nuance, the hesitation in someone's voice, the thing that wasn't said but clearly meant. These are the findings that matter most and that Claude consistently misses.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <h4>Finalise and share</h4>
+          <p>The refined document becomes the single source of truth for a research cycle. Insights feed directly into prototyping, requirements, and stakeholder communications.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>Key Learning:</strong> Claude is excellent at quantifying what appeared in the data. It reliably misses what the data implies. The most important insights in recent sessions - including the standout finding from the Discretionary and Executive research - had to be added manually by the researcher after review. Human judgment remains the irreplaceable layer.
+    </div>
+  </section>
+
+  <!-- SYNTHETIC USERS -->
+  <section class="section" id="synthetic">
+    <div class="section-label"><span class="dot"></span> Agile Testing</div>
+    <h2 class="section-title">Synthetic users<br><em>built from real data</em></h2>
+    <p class="section-intro">Synthetic users are not a replacement for real recruitment - they're what happens before it. A fast, low-cost validation layer that sharpens direction and makes the live research sessions more focused when they do happen.</p>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-card-num">When Used</div>
+        <h4>At project kick-off</h4>
+        <p>Before any recruitment begins, synthetic users give early directional signal on concepts. They help us test assumptions quickly and identify where the real research needs to focus.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">When Used</div>
+        <h4>Straight after a prototype is built</h4>
+        <p>Once a prototype is ready, synthetic users provide immediate feedback before a recruitment round is commissioned - catching obvious friction and refining the design before live participants see it.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">When Used</div>
+        <h4>Between research cycles</h4>
+        <p>When a new question emerges mid-project and there is no time to recruit, synthetic users bridge the gap - keeping momentum without the wait.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Built From</div>
+        <h4>Real research transcripts</h4>
+        <p>Synthetic users are grounded in data from previous live sessions, making them contextually accurate for EQ's specific scheme types and admin profiles.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SME FEEDBACK -->
+  <section class="section" id="personas">
+    <div class="section-label"><span class="dot"></span> Stakeholder Engagement</div>
+    <h2 class="section-title">SME feedback and<br><em>meeting visualisation</em></h2>
+    <p class="section-intro">Structured SME input is critical to the Etch model. Claude helps generate the scaffolding that makes that input actionable.</p>
+
+    <div class="quote-block">
+      <p class="quote-text">Just before the Discretionary research sessions, meeting notes from the Discovery workshop were visualised through Claude - turning a dense stakeholder meeting into a clear picture of what we knew, what we were testing for, and what questions still needed answering.</p>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-card-num">Application</div>
+        <h4>Comment sections on prototypes</h4>
+        <p>When sharing a prototype or flow with stakeholders, Claude generates a structured comment section that can be exported as a text file - keeping feedback organised and traceable.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Application</div>
+        <h4>Meeting summaries as visual artefacts</h4>
+        <p>Post-meeting notes are transformed into visual summaries: themes, open questions, decisions made. These help the team prepare for the next phase without losing context between sessions.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Application</div>
+        <h4>Research prep and framing</h4>
+        <p>Before live sessions, Claude helps structure what is already known versus what needs validation - ensuring research time is focused on the right questions rather than re-covering ground.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESEARCH OPS PORTAL -->
+  <section class="section" id="sme">
+    <div class="section-label"><span class="dot"></span> In Progress</div>
+    <h2 class="section-title">Research Operations<br><em>Portal for EQ</em></h2>
+    <p class="section-intro">A centralised, chronological archive of everything Etch has researched for EQ - built so decisions are always traceable and no insight is lost after a project ends.</p>
+
+    <div class="stats-row">
+      <div class="stat-block">
+        <div class="stat-n">All<span>+</span></div>
+        <div class="stat-l">Research Archived</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n">6<span>+</span></div>
+        <div class="stat-l">Schemes Covered</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n">1</div>
+        <div class="stat-l">Source of Truth</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n">∞</div>
+        <div class="stat-l">Institutional Memory</div>
+      </div>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-card-num">Hosted In Portal</div>
+        <h4>Research videos</h4>
+        <p>Session recordings accessible in context alongside the findings they generated - not buried in a folder somewhere after the project closes.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Hosted In Portal</div>
+        <h4>Transcripts and findings</h4>
+        <p>Processed transcripts, synthesis documents, and insight clusters - cross-linked to the sessions that produced them.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Hosted In Portal</div>
+        <h4>Prototype links and decisions</h4>
+        <p>Every prototype iteration linked to the research that informed it. Every design decision traceable to evidence. Including Lyssna outputs.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Hosted In Portal</div>
+        <h4>Lyssna and external research</h4>
+        <p>All research - including Lyssna quantitative testing - housed in one place, chronologically, so EQ teams can see the full picture across time.</p>
+      </div>
+    </div>
+
+    <div class="dark-callout">
+      <h3>The information that gets lost constantly - <em>what decisions were made and why</em> - this system captures it.</h3>
+      <p>The Research Operations Portal is being built to solve one of the most persistent problems in product organisations: institutional knowledge that evaporates after a project ends. Every session. Every finding. Every decision. Permanently connected.</p>
+    </div>
+  </section>
+
+  <!-- CLIENT CORRESPONDENCE -->
+  <section class="section" id="portal">
+    <div class="section-label"><span class="dot"></span> Operations</div>
+    <h2 class="section-title">Client admin<br><em>correspondence</em></h2>
+    <p class="section-intro">Managing Client Admin correspondence at scale is time-intensive. Claude helps organise, triage, and track - so researcher time goes to research, not inbox management.</p>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-card-num">Function</div>
+        <h4>Email parsing and triage</h4>
+        <p>Bulk correspondence with Client Admins parsed to surface what needs a response, what is informational, and what needs escalation - without reading every thread manually.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Function</div>
+        <h4>Follow-up drafting</h4>
+        <p>Claude drafts follow-up emails and response templates based on context from the original thread - reviewed and sent by the researcher, not auto-sent.</p>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-num">Function</div>
+        <h4>Tracking and loop management</h4>
+        <p>Correspondence organised into a structured tracking system - an Excel-based loop system - so nothing falls through the cracks across multiple active client relationships.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT WORKS -->
+  <section class="section" id="correspondence">
+    <div class="section-label"><span class="dot"></span> Honest Assessment</div>
+    <h2 class="section-title">What works, and<br><em>what doesn't</em></h2>
+    <p class="section-intro">An honest audit. Claude is genuinely transformative for some aspects of research operations - and genuinely limited in others. Understanding the boundary is what makes it useful.</p>
+
+    <div class="split-grid">
+      <div class="split-card upside">
+        <h3>What Claude Does Well</h3>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Quantifying research output</strong>
+            <p>Counting how many times an insight appeared across sessions. Surfacing patterns. Building frequency tables. Reliable and fast.</p>
+          </div>
+        </div>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Prototyping at speed</strong>
+            <p>Turning research transcripts into interactive concepts, flows, and visualisations faster than any traditional workflow.</p>
+          </div>
+        </div>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Organising and structuring</strong>
+            <p>Affinity mapping, journey mapping, persona structuring - Claude handles the scaffolding so researchers can focus on judgment calls.</p>
+          </div>
+        </div>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Visual artefact generation</strong>
+            <p>Personas, journey maps, meeting visualisations, and insight clusters that communicate research findings clearly to stakeholders.</p>
+          </div>
+        </div>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Correspondence at scale</strong>
+            <p>Managing and triaging bulk client admin emails that would otherwise consume significant researcher bandwidth.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="split-card downside">
+        <h3>Where Claude Falls Short</h3>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Reading between the lines</strong>
+            <p>The most important insights from recent sessions - including the standout finding from the Discretionary and Executive research - were not in Claude's top findings. They required a researcher to be in the room.</p>
+          </div>
+        </div>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Missing what was implied, not said</strong>
+            <p>Hesitation, body language, the thing a participant almost said but didn't - Claude processes words, not meaning. Human researchers process both.</p>
+          </div>
+        </div>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Prioritising by importance, not frequency</strong>
+            <p>Claude ranks by occurrence. Researchers rank by significance. These are not the same thing. A finding mentioned once by the right person can be more important than one mentioned ten times by others.</p>
+          </div>
+        </div>
+        <div class="split-item">
+          <div class="split-dot"></div>
+          <div>
+            <strong>Context and stakes</strong>
+            <p>Claude does not know the political history of a client relationship, the operational constraints of a scheme, or why a particular finding will land differently in a particular room. Researchers do.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top: 2rem;">
+      <strong>The principle that holds:</strong> AI accelerates. Humans decide. Always. Claude does the heavy lifting. Researchers do the thinking.
+    </div>
+  </section>
+
+  <!-- FUTURE THINKING -->
+  <section class="section" id="balance">
+    <div class="section-label"><span class="dot"></span> Future Thinking</div>
+    <h2 class="section-title">What comes<br><em>next</em></h2>
+    <p class="section-intro">Now that Claude knows the full shape of how Etch does research - the schemes, the participants, the workflows, the decisions - it can start contributing to strategy, not just execution.</p>
+
+    <div class="future-grid">
+      <div class="future-card">
+        <div class="future-num">01 - Strategy</div>
+        <h4>Research strategy recommendations</h4>
+        <p>Claude knows what we have researched, what gaps exist, and what decisions are still unsupported by evidence. It can now proactively suggest what to research next, which findings need validation, and where the biggest unknown risks are in the current roadmap.</p>
+      </div>
+      <div class="future-card">
+        <div class="future-num">02 - Recruitment</div>
+        <h4>Build our own recruitment tool</h4>
+        <p>Instead of paying for third-party recruitment platforms, we could build our own participant management system - screener design, outreach templates, scheduling, incentive tracking. Claude can generate the infrastructure; researchers manage the relationships.</p>
+      </div>
+      <div class="future-card">
+        <div class="future-num">03 - Testing Platform</div>
+        <h4>An internal Lyssna alternative</h4>
+        <p>Build lightweight usability testing flows directly within our own system rather than depending on external platforms. Prototype testing, task analysis, and preference testing - all hosted, controlled, and connected to the research repository.</p>
+      </div>
+      <div class="future-card">
+        <div class="future-num">04 - Continuous Testing</div>
+        <h4>Always-on research loops</h4>
+        <p>Features tagged to research themes and continuously tested - not in one-off research rounds, but as a living loop. New design decisions automatically connected to the evidence base, with gaps flagged as they open.</p>
+      </div>
+      <div class="future-card">
+        <div class="future-num">05 - Synthesis Refinement</div>
+        <h4>Training Claude on Etch's research patterns</h4>
+        <p>As Claude is exposed to more Etch research cycles, its synthesis output will become more calibrated to the kinds of insights Etch research consistently surfaces. Iterating on prompts and synthesis approaches to close the gap between what Claude produces and what researchers need.</p>
+      </div>
+      <div class="future-card">
+        <div class="future-num">06 - Shareable Synthetic Users</div>
+        <h4>Extending synthetic users to EQ product teams</h4>
+        <p>Synthetic users built from Etch's research data could be made available to the wider EQ product team - giving product managers a fast, grounded tool for hypothesis testing that doesn't require a new research cycle to be commissioned.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <section class="closing" id="future">
+    <div class="closing-content">
+      <div class="section-label" style="margin-bottom: 1.5rem;"><span class="dot"></span> The Principle</div>
+      <h2><em>AI accelerates.</em><br>Humans decide.<br>Always.</h2>
+      <p>Claude has made Etch research faster, more structured, and more scalable. It has not made it easier to know what matters. That remains the job of researchers who were in the room, who read the silences, who understood the stakes. The combination - not either alone - is what makes this model work.</p>
+      <div class="closing-stats">
+        <div>
+          <div class="closing-stat-n">7</div>
+          <div class="closing-stat-l">Active Use Cases</div>
+        </div>
+        <div>
+          <div class="closing-stat-n">4×</div>
+          <div class="closing-stat-l">Faster Synthesis</div>
+        </div>
+        <div>
+          <div class="closing-stat-n">0</div>
+          <div class="closing-stat-l">Insights Outsourced to AI</div>
+        </div>
+        <div>
+          <div class="closing-stat-n">1</div>
+          <div class="closing-stat-l">Team. Full Ownership.</div>
+        </div>
+      </div>
+    </div>
+    <div class="closing-footer">
+      Etch x EQ - Claude for User Research - April 2026
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Active nav on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
